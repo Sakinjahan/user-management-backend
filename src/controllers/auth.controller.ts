@@ -8,7 +8,8 @@ export class AuthController {
   static async register(req: Request, res: Response) {
     try {
       const sanitizedBody = sanitize(req.body);
-      const { name, email, password } = sanitizedBody;
+      const {  fullName:name, email, password } = sanitizedBody;
+      console.log('Registering user:', name, email, password)
 
       if (!name || !email || !password) {
         return res.status(400).json({
@@ -214,6 +215,155 @@ export class AuthController {
       res.status(500).json({
         success: false,
         message: 'Failed to logout.'
+      });
+    }
+  }
+
+  static async getProfile(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.'
+        });
+      }
+
+      const userResponse = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+
+      res.status(200).json({
+        success: true,
+        user: userResponse
+      });
+    } catch (error: any) {
+      console.error('Get profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve profile.'
+      });
+    }
+  }
+
+  static async updateProfile(req: Request, res: Response) {
+    try {
+      const sanitizedBody = sanitize(req.body);
+      const { name } = sanitizedBody;
+      const userId = req.user?._id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized.'
+        });
+      }
+
+      if (name) {
+        if (!validator.isLength(name, { min: 2, max: 50 })) {
+          return res.status(400).json({
+            success: false,
+            message: 'Name must be between 2 and 50 characters.'
+          });
+        }
+      }
+
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { name },
+        { new: true, runValidators: true }
+      ).select('-password');
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.'
+        });
+      }
+
+      const userResponse = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
+
+      res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully.',
+        user: userResponse
+      });
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update profile.'
+      });
+    }
+  }
+
+  static async changePassword(req: Request, res: Response) {
+    try {
+      const sanitizedBody = sanitize(req.body);
+      const { currentPassword, newPassword } = sanitizedBody;
+      const userId = req.user?._id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized.'
+        });
+      }
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password and new password are required.'
+        });
+      }
+
+      if (!validator.isLength(newPassword, { min: 6 })) {
+        return res.status(400).json({
+          success: false,
+          message: 'New password must be at least 6 characters long.'
+        });
+      }
+
+      const user = await User.findById(userId).select('+password');
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found.'
+        });
+      }
+
+      const isMatch = await user.comparePassword(currentPassword);
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'Current password is incorrect.'
+        });
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        message: 'Password changed successfully.'
+      });
+    } catch (error: any) {
+      console.error('Change password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to change password.'
       });
     }
   }

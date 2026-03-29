@@ -43,8 +43,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   // Prevent exposing sensitive error details to client
   const errorMessage = process.env.NODE_ENV === 'production' 
     ? 'Internal Server Error'
-    : err.message;
-    
+    : err.message; 
+     
   res.status(500).send({ error: errorMessage });
 });
 
@@ -55,4 +55,5 @@ app.use('*', (req: express.Request, res: express.Response) => {
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
 });
