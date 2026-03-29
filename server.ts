@@ -5,7 +5,6 @@ import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import apiRoutes from './src/routes';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './src/config/swagger.config';
 import connectDB from './src/config/db';
 
 const app = express();
@@ -25,16 +24,22 @@ connectDB();
 // Routes
 app.use('/api', apiRoutes);
 
-// Swagger UI documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  swaggerOptions: {
-    deepLinking: true,
-    docExpansion: 'list',
-    filter: true
-  },
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Zentask API Documentation'
-}));
+// Swagger UI documentation (only in development)
+if (process.env.NODE_ENV !== 'production') {
+  import('./src/config/swagger.config').then(({ default: swaggerSpec }) => {
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+      swaggerOptions: {
+        deepLinking: true,
+        docExpansion: 'list',
+        filter: true
+      },
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Zentask API Documentation'
+    }));
+  }).catch(err => {
+    console.warn('Swagger documentation not available:', err.message);
+  });
+}
 
 // Centralized Error Handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

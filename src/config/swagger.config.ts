@@ -244,7 +244,7 @@ const swaggerOptions: swaggerJSDoc.Options = {
       }
     }
   },
-  apis: ['./src/**/*.ts', '../**/*.ts'] // Path to the API docs
+  apis: ['./dist/**/*.js'] // Path to the compiled API docs
 };
 
 export default swaggerJSDoc(swaggerOptions);
