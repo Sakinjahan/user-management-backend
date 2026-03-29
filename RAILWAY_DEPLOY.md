@@ -14,7 +14,9 @@ The following changes have been made to fix the Railway deployment error:
 
 ### 3. **Created Railway Configuration Files**
 - `railway.json` - Railway deployment configuration
-- `nixpacks.toml` - Build and install instructions for Node.js + pnpm
+- `nixpacks.toml` - Build and install instructions for Node.js + pnpm (uses `nodejs_20`)
+- `.railway.toml` - Alternative Railway buildpack configuration
+- `RAILWAY_DEPLOY.md` - Complete deployment guide
 
 ## 🚀 Deployment Steps
 

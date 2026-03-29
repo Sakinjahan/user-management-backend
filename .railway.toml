@@ -1,0 +1,5 @@
+# Railway Node.js Buildpack Configuration
+# This file tells Railway to use the native Node.js buildpack instead of Nixpacks
+
+[build]
+builder = "NODEJS"
