@@ -17,6 +17,12 @@ export class TodoController {
    */
   static async getAll(req: Request, res: Response) {
     try {
+      const userId = req.user?._id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       const { category, priority, search } = req.query;
       
       // Sanitize query parameters
@@ -24,7 +30,7 @@ export class TodoController {
       const sanitizedPriority = sanitize(priority);
       const sanitizedSearch = sanitize(search);
       
-      let query: any = {};
+      let query: any = { userId };
 
       if (sanitizedCategory && sanitizedCategory !== 'ALL') query.category = sanitizedCategory;
       if (sanitizedPriority && sanitizedPriority !== 'ALL') query.priority = sanitizedPriority;
@@ -59,6 +65,12 @@ export class TodoController {
    */
   static async create(req: Request, res: Response) {
     try {
+      const userId = req.user?._id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       // Sanitize input to prevent injection attacks
       const sanitizedBody = sanitize(req.body);
       
@@ -76,7 +88,7 @@ export class TodoController {
         return res.status(400).json({ message: 'Invalid category value' });
       }
       
-      const todo = new Todo(sanitizedBody);
+      const todo = new Todo({ ...sanitizedBody, userId });
       const savedTodo = await todo.save();
       res.status(201).json(savedTodo);
     } catch (error: any) {
@@ -102,6 +114,12 @@ export class TodoController {
    */
   static async update(req: Request, res: Response) {
     try {
+      const userId = req.user?._id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       // Sanitize the ID parameter to prevent injection
       const sanitizedId = sanitize(req.params.id);
       
@@ -117,8 +135,8 @@ export class TodoController {
         return res.status(400).json({ message: 'Invalid category value' });
       }
       
-      const updatedTodo = await Todo.findByIdAndUpdate(
-        sanitizedId, 
+      const updatedTodo = await Todo.findOneAndUpdate(
+        { _id: sanitizedId, userId },
         sanitizedBody, 
         { new: true }
       );
@@ -142,10 +160,16 @@ export class TodoController {
    */
   static async delete(req: Request, res: Response) {
     try {
+      const userId = req.user?._id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
       // Sanitize the ID parameter to prevent injection
       const sanitizedId = sanitize(req.params.id);
       
-      const deletedTodo = await Todo.findByIdAndDelete(sanitizedId);
+      const deletedTodo = await Todo.findOneAndDelete({ _id: sanitizedId, userId });
       if (!deletedTodo) return res.status(404).json({ message: 'Todo not found' });
       res.json({ message: 'Todo deleted successfully' });
     } catch (error: any) {
