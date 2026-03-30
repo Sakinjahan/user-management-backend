@@ -9,16 +9,21 @@ const connectDB = async (): Promise<void> => {
     }
     
     logger.info('Attempting to connect to MongoDB...');
+    logger.info(`Connection string format: ${process.env.MONGODB_URI.includes('mongodb+srv://') ? '✅ Valid SRV' : '❌ Invalid format'}`);
     
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
     
-    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
+    logger.info(`✅ MongoDB Connected Successfully!`);
+    logger.info(`Host: ${conn.connection.host}`);
+    logger.info(`Database: ${conn.connection.name}`);
   } catch (error: any) {
-    logger.error(`❌ Database connection error: ${error.message}`);
-    logger.error(`Connection string: ${process.env.MONGODB_URI ? 'Provided' : 'Missing'}`);
+    logger.error(`❌ Database connection FAILED: ${error.message}`);
+    logger.error(`Error code: ${error.code || 'N/A'}`);
+    logger.error(`Error reason: ${error.reason || 'Unknown'}`);
+    logger.error(`Connection string provided: ${process.env.MONGODB_URI ? 'YES' : 'NO'}`);
     throw error;
   }
 };
