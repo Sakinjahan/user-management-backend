@@ -194,3 +194,6 @@ The project uses TypeScript with strict type checking. All source files are comp
 ## License
 
 MIT License - see LICENSE file for details.
+git bash port finding and remove uses
+netstat -ano | grep :3000
+taskkill //PID 12345 //F
