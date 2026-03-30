@@ -19,7 +19,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Connect to database
-connectDB();
+connectDB().catch((err) => {
+  console.error('Failed to connect to database:', err);
+  // Don't exit - allow server to start for health checks
+  // This helps with Railway deployment debugging
+});
 
 // Routes
 app.use('/api', apiRoutes);

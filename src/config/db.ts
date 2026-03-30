@@ -4,15 +4,22 @@ import { logger } from '../utils/logger';
 const connectDB = async (): Promise<void> => {
   try {
     if (!process.env.MONGODB_URI) {
+      logger.error('MONGODB_URI environment variable is required but not provided');
       throw new Error('MONGODB_URI environment variable is required');
     }
     
-    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    logger.info('Attempting to connect to MongoDB...');
     
-    logger.info(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    logger.error('Database connection error:', error);
-    process.exit(1);
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    
+    logger.info(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error: any) {
+    logger.error(`❌ Database connection error: ${error.message}`);
+    logger.error(`Connection string: ${process.env.MONGODB_URI ? 'Provided' : 'Missing'}`);
+    throw error;
   }
 };
 
