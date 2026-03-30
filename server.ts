@@ -30,7 +30,11 @@ app.use('/api', apiRoutes);
 
 // Swagger UI documentation (only in development)
 if (process.env.NODE_ENV !== 'production') {
-  import('./src/config/swagger.config').then(({ default: swaggerSpec }) => {
+  // Load swagger config synchronously for development
+  let swaggerSpec: any;
+  try {
+    const swaggerModule = require('./src/config/swagger.config');
+    swaggerSpec = swaggerModule.default || swaggerModule;
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
       swaggerOptions: {
         deepLinking: true,
@@ -40,9 +44,10 @@ if (process.env.NODE_ENV !== 'production') {
       customCss: '.swagger-ui .topbar { display: none }',
       customSiteTitle: 'Zentask API Documentation'
     }));
-  }).catch(err => {
+    console.log('✅ Swagger UI loaded at http://localhost:' + PORT + '/api-docs');
+  } catch (err: any) {
     console.warn('Swagger documentation not available:', err.message);
-  });
+  }
 }
 
 // Centralized Error Handling
